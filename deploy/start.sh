@@ -3,6 +3,16 @@ set -eu
 
 cd /var/www/html
 
+# Render assigns the public hostname at deploy time. Keep the SPA and API on
+# that single HTTPS origin unless an explicit custom-domain URL is configured.
+if [ -z "${APP_URL:-}" ] && [ -n "${RENDER_EXTERNAL_HOSTNAME:-}" ]; then
+    export APP_URL="https://${RENDER_EXTERNAL_HOSTNAME}"
+fi
+
+if [ -z "${FRONTEND_URL:-}" ] && [ -n "${APP_URL:-}" ]; then
+    export FRONTEND_URL="$APP_URL"
+fi
+
 mkdir -p \
     storage/app/public \
     storage/framework/cache/data \

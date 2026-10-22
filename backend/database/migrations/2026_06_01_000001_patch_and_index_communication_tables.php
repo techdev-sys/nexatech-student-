@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         // Extend status enum to include queued and cancelled
-        if (DB::getDriverName() !== 'sqlite') {
+        if (DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE communications MODIFY COLUMN status ENUM('draft','scheduled','queued','processing','completed','failed','cancelled') NOT NULL DEFAULT 'draft'");
             DB::statement("ALTER TABLE communication_deliveries MODIFY COLUMN delivery_status ENUM('pending','queued','sent','delivered','failed','skipped') NOT NULL DEFAULT 'pending'");
         }
@@ -73,7 +73,7 @@ return new class extends Migration
             $table->dropIndex(['deleted_at']);
         });
 
-        if (DB::getDriverName() !== 'sqlite') {
+        if (DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE communications MODIFY COLUMN status ENUM('draft','scheduled','processing','completed','failed') NOT NULL DEFAULT 'draft'");
             DB::statement("ALTER TABLE communication_deliveries MODIFY COLUMN delivery_status ENUM('pending','sent','delivered','failed') NOT NULL DEFAULT 'pending'");
         }

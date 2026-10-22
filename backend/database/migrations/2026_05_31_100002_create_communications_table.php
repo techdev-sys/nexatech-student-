@@ -20,7 +20,7 @@ return new class extends Migration
             $table->text('body');
             $table->timestamp('scheduled_at')->nullable();
             $table->timestamp('sent_at')->nullable();
-            $table->enum('status', ['draft', 'scheduled', 'processing', 'completed', 'failed'])->default('draft');
+            $table->enum('status', ['draft', 'scheduled', 'queued', 'processing', 'completed', 'failed', 'cancelled'])->default('draft');
             $table->unsignedInteger('total_recipients')->default(0);
             $table->unsignedInteger('successful_deliveries')->default(0);
             $table->unsignedInteger('failed_deliveries')->default(0);

@@ -7,7 +7,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (DB::getDriverName() !== 'sqlite') {
+        if (DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin','admin','teacher','parent') NOT NULL DEFAULT 'teacher'");
         }
         // SQLite stores TEXT; no MODIFY needed — any value is accepted.
@@ -15,7 +15,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (DB::getDriverName() !== 'sqlite') {
+        if (DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin','admin','teacher') NOT NULL DEFAULT 'teacher'");
         }
     }

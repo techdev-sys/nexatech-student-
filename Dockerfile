@@ -22,11 +22,12 @@ RUN apt-get update \
         libfreetype6-dev \
         libicu-dev \
         libjpeg62-turbo-dev \
+        libpq-dev \
         libpng-dev \
         libzip-dev \
         unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" bcmath gd intl pdo_mysql zip \
+    && docker-php-ext-install -j"$(nproc)" bcmath gd intl pdo_mysql pdo_pgsql zip \
     && curl --fail --location --retry 5 --retry-all-errors \
         https://github.com/phpredis/phpredis/archive/refs/tags/6.3.0.tar.gz \
         --output /tmp/phpredis.tar.gz \

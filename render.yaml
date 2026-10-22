@@ -1,0 +1,61 @@
+services:
+  - type: web
+    name: nexatech-student
+    runtime: docker
+    plan: free
+    healthCheckPath: /up
+    envVars:
+      - key: APP_NAME
+        value: Nexatech School Operations Platform
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: nexatech-postgres
+          property: connectionString
+      - key: DB_SSLMODE
+        value: prefer
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: SESSION_DRIVER
+        value: database
+      - key: AUTH_COOKIE_NAME
+        value: nexatech_session
+      - key: AUTH_COOKIE_SECURE
+        value: "true"
+      - key: AUTH_COOKIE_SAME_SITE
+        value: lax
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: SESSION_HTTP_ONLY
+        value: "true"
+      - key: SESSION_SAME_SITE
+        value: lax
+      - key: SESSION_ENCRYPT
+        value: "true"
+      - key: PUBLIC_REGISTRATION_ENABLED
+        value: "false"
+      - key: DEMO_CODE_LIFETIME_MINUTES
+        value: "1440"
+      - key: DEMO_SESSION_LIFETIME_MINUTES
+        value: "120"
+      - key: MAIL_MAILER
+        value: log
+
+databases:
+  - name: nexatech-postgres
+    databaseName: nexatech
+    user: nexatech
+    plan: free

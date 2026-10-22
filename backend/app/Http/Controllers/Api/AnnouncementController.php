@@ -164,7 +164,7 @@ class AnnouncementController extends Controller
                 $q->orWhere(function ($sub) use ($childGrades) {
                     $sub->where('audience_type', 'grade')
                         ->whereIn(
-                            DB::raw("JSON_UNQUOTE(JSON_EXTRACT(audience_filter_json, '$.grade_level'))"),
+                            DB::raw($this->audienceJsonText('grade_level')),
                             $childGrades
                         );
                 });
@@ -177,7 +177,7 @@ class AnnouncementController extends Controller
                 $q->orWhere(function ($sub) use ($ids, $placeholders) {
                     $sub->where('audience_type', 'class')
                         ->whereRaw(
-                            "CAST(JSON_UNQUOTE(JSON_EXTRACT(audience_filter_json, '$.class_id')) AS UNSIGNED) IN ($placeholders)",
+                            $this->audienceJsonInteger('class_id') . " IN ($placeholders)",
                             $ids
                         );
                 });
@@ -280,5 +280,23 @@ class AnnouncementController extends Controller
             ->all();
 
         return [$childGrades, $childClassIds];
+    }
+
+    private function audienceJsonText(string $key): string
+    {
+        return match (DB::getDriverName()) {
+            'pgsql' => "audience_filter_json->>'{$key}'",
+            'sqlite' => "json_extract(audience_filter_json, '$.{$key}')",
+            default => "JSON_UNQUOTE(JSON_EXTRACT(audience_filter_json, '$.{$key}'))",
+        };
+    }
+
+    private function audienceJsonInteger(string $key): string
+    {
+        return match (DB::getDriverName()) {
+            'pgsql' => "(audience_filter_json->>'{$key}')::bigint",
+            'sqlite' => "CAST(json_extract(audience_filter_json, '$.{$key}') AS INTEGER)",
+            default => "CAST(JSON_UNQUOTE(JSON_EXTRACT(audience_filter_json, '$.{$key}')) AS UNSIGNED)",
+        };
     }
 }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('recipient_phone')->nullable();
             $table->string('recipient_email')->nullable();
             $table->enum('channel', ['sms', 'email', 'announcement']);
-            $table->enum('delivery_status', ['pending', 'sent', 'delivered', 'failed'])->default('pending');
+            $table->enum('delivery_status', ['pending', 'queued', 'sent', 'delivered', 'failed', 'skipped'])->default('pending');
             $table->string('provider_reference')->nullable();
             $table->text('error_message')->nullable();
             $table->timestamp('delivered_at')->nullable();
