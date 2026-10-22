@@ -176,8 +176,8 @@ export default function AppShell({ page, onNavigate, statusBadge, children }) {
   ]
 
   return (
-    <div className="min-h-screen bg-[#faf9fe] text-[#1a1b1f]">
-      <header className="h-12 bg-white border-b border-[#D2D2D2] flex items-center justify-between px-4 sticky top-0 z-40">
+    <div className="h-dvh overflow-hidden bg-[#faf9fe] text-[#1a1b1f] flex flex-col">
+      <header className="h-12 shrink-0 bg-white border-b border-[#D2D2D2] flex items-center justify-between px-4 z-40">
         <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => setCollapsed(v => !v)}
@@ -219,8 +219,8 @@ export default function AppShell({ page, onNavigate, statusBadge, children }) {
         </div>
       </header>
 
-      <div className="flex min-h-[calc(100vh-48px)]">
-        <aside className={`${collapsed ? 'w-16' : 'w-60'} bg-[#113264] border-r border-[#D2D2D2] flex flex-col shrink-0 transition-all duration-200`}>
+      <div className="flex flex-1 min-h-0">
+        <aside className={`${collapsed ? 'w-16' : 'w-60'} h-full bg-[#113264] border-r border-[#D2D2D2] flex flex-col shrink-0 transition-all duration-200`}>
           <div className="px-4 py-3 border-b border-white/10 min-h-[54px]">
             {!collapsed ? (
               <>
@@ -232,7 +232,7 @@ export default function AppShell({ page, onNavigate, statusBadge, children }) {
             )}
           </div>
 
-          <nav className="flex-1 py-3 overflow-y-auto">
+          <nav className="flex-1 min-h-0 py-3 overflow-y-auto overscroll-contain">
             {nav.map((item, i) => {
               if (item.divider) {
                 return collapsed
@@ -259,12 +259,12 @@ export default function AppShell({ page, onNavigate, statusBadge, children }) {
           </div>
         </aside>
 
-        <div className="flex-1 flex flex-col min-w-0 overflow-auto">
-          <div className="h-9 bg-white border-b border-[#D2D2D2] px-4 flex items-center justify-between shrink-0">
+        <div className="flex-1 min-w-0 min-h-0 overflow-y-auto overscroll-contain">
+          <div className="h-9 sticky top-0 z-20 bg-white border-b border-[#D2D2D2] px-4 flex items-center justify-between shrink-0">
             <h1 className="text-[20px] leading-7 font-semibold text-[#001d45] uppercase truncate">{getPageLabel(nav, page)}</h1>
             <span className="text-[11px] leading-4 text-[#44474f] uppercase">Term 3 / 2025</span>
           </div>
-          <main className="flex-1 p-4 bg-[#faf9fe]">{children}</main>
+          <main className="p-4 bg-[#faf9fe]">{children}</main>
         </div>
       </div>
     </div>
