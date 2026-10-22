@@ -47,7 +47,10 @@ case "$mode" in
             php artisan db:seed --class=DemoSchoolSeeder --force
         fi
         if [ "${SEED_GREENWOOD_HIGH:-false}" = "true" ]; then
-            php artisan db:seed --class=GreenWoodHighDemoSeeder --force
+            # The complete school demo has several thousand related records.
+            # Start it in the background so Render can observe Apache's health
+            # endpoint instead of failing the web-service startup timeout.
+            php artisan db:seed --class=GreenWoodHighDemoSeeder --force >> storage/logs/greenwood-seed.log 2>&1 &
         fi
         if [ "${BOOTSTRAP_PLATFORM_ADMIN:-false}" = "true" ]; then
             php artisan platform:bootstrap-admin
