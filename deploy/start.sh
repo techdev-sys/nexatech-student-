@@ -46,12 +46,20 @@ case "$mode" in
         if [ "${SEED_DEMO_SCHOOL:-false}" = "true" ]; then
             php artisan db:seed --class=DemoSchoolSeeder --force
         fi
+        if [ "${SEED_GREENWOOD_HIGH:-false}" = "true" ]; then
+            php artisan db:seed --class=GreenWoodHighDemoSeeder --force
+        fi
         if [ "${BOOTSTRAP_PLATFORM_ADMIN:-false}" = "true" ]; then
             php artisan platform:bootstrap-admin
         fi
         a2dismod mpm_event mpm_worker
         a2enmod mpm_prefork
-        sed -ri 's/^[[:space:]]*Listen[[:space:]]+80$/Listen 8080/' /etc/apache2/ports.conf
+        # Render supplies PORT at runtime (currently 10000). Keep Apache and
+        # its virtual host aligned with it instead of assuming the Dockerfile
+        # default of 8080.
+        listen_port="${PORT:-8080}"
+        sed -ri "s/^[[:space:]]*Listen[[:space:]]+80$/Listen ${listen_port}/" /etc/apache2/ports.conf
+        sed -ri "s/<VirtualHost \*:8080>/<VirtualHost *:${listen_port}>/" /etc/apache2/sites-available/000-default.conf
         apache2ctl -t
         exec apache2-foreground
         ;;
