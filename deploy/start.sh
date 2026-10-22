@@ -13,6 +13,12 @@ if [ -z "${FRONTEND_URL:-}" ] && [ -n "${APP_URL:-}" ]; then
     export FRONTEND_URL="$APP_URL"
 fi
 
+# Render's generated secrets are base64 strings. Laravel expects the same
+# value with an explicit prefix so it can decode it to a 32-byte AES key.
+if [ -n "${APP_KEY:-}" ] && [ "${APP_KEY#base64:}" = "$APP_KEY" ]; then
+    export APP_KEY="base64:$APP_KEY"
+fi
+
 mkdir -p \
     storage/app/public \
     storage/framework/cache/data \
