@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\FinanceDashboardController;
 use App\Http\Controllers\Api\IncomeCategoryController;
 use App\Http\Controllers\Api\ParentController;
+use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\ProvisioningController;
 use App\Http\Controllers\Api\FeeStructureController;
 use App\Http\Controllers\Api\GradeController;
@@ -43,15 +44,21 @@ use App\Http\Controllers\Api\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 // ── Public ────────────────────────────────────────────────────────────────────
-Route::post('/register', [AuthController::class, 'register']);
+if (config('registration.public_enabled')) {
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:3,1');
+}
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/demo-requests', [DemoRequestController::class, 'store'])->middleware('throttle:8,1');
+Route::post('/demo/redeem', [DemoRequestController::class, 'redeem'])->middleware('throttle:5,1');
+Route::post('/forgot-password', [PasswordResetController::class, 'requestLink'])->middleware('throttle:3,1');
+Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:5,1');
 Route::post('/gateways/{gateway}/callback', [WebhookController::class, 'handle'])
     ->where('gateway', 'paynow|stitch|payfast');
 
 // ── Authenticated ─────────────────────────────────────────────────────────────
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'demo.readonly'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->middleware('throttle:5,1');
     Route::get('/me',      [AuthController::class, 'me']);
 
     // Students — admin+teacher only; parent must use /v1/parent/overview, not this general list

@@ -97,7 +97,7 @@ class GradeController extends Controller
         $data = $request->validate([
             'assessment_id'       => ['required', Rule::exists('assessments', 'id')->where('school_id', $schoolId)],
             'grades'              => 'required|array|min:1',
-            'grades.*.student_id' => ['required', Rule::exists('students', 'id')->where('school_id', $schoolId)],
+            'grades.*.student_id' => ['required', 'distinct', Rule::exists('students', 'id')->where('school_id', $schoolId)],
             'grades.*.score'      => 'required|numeric|min:0',
         ]);
 
@@ -106,6 +106,10 @@ class GradeController extends Controller
 
         // Verify assessment belongs to this tenant
         abort_if($assessment->school_id !== $schoolId, 403);
+
+        $request->validate([
+            'grades.*.score' => ['required', 'numeric', 'min:0', 'max:'.$assessment->max_marks],
+        ]);
 
         $gradingSystem = $assessment->effectiveGradingSystem();
 

@@ -33,7 +33,7 @@ async function run() {
   await page.waitForLoadState('networkidle');
   await ss(page, '01-login');
   const loginHeading = await page.locator('h1, h2').first().textContent();
-  loginHeading.includes('Student Monitor') ? pass(`Heading: "${loginHeading}"`) : fail(`Bad heading: "${loginHeading}"`);
+  loginHeading.includes('School Operations Platform') ? pass(`Heading: "${loginHeading}"`) : fail(`Bad heading: "${loginHeading}"`);
 
   // ── 2. Login with bad credentials ─────────────────────────────────────────
   console.log('\n[2] Bad credentials probe');

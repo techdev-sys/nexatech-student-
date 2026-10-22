@@ -18,9 +18,9 @@ class SmsService
         $this->baseUrl  = $sandbox
             ? 'https://api.sandbox.africastalking.com/version1/messaging'
             : 'https://api.africastalking.com/version1/messaging';
-        $this->username = config('services.africastalking.username', 'sandbox');
-        $this->apiKey   = config('services.africastalking.api_key', '');
-        $this->senderId = config('services.africastalking.sender', '');
+        $this->username = (string) config('services.africastalking.username', 'sandbox');
+        $this->apiKey   = (string) config('services.africastalking.api_key', '');
+        $this->senderId = (string) config('services.africastalking.sender', '');
     }
 
     /**

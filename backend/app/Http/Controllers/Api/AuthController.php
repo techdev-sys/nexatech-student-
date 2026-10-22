@@ -36,10 +36,9 @@ class AuthController extends Controller
 
         $token = $user->createToken('api-token', ['*'], now()->addDays(30))->plainTextToken;
 
-        return response()->json([
+        return $this->withAuthCookie(response()->json([
             'user'  => $user->load('school'),
-            'token' => $token,
-        ], 201);
+        ], 201), $token);
     }
 
     public function login(Request $request)
@@ -65,21 +64,57 @@ class AuthController extends Controller
 
         $token = $user->createToken('api-token', ['*'], now()->addDays(30))->plainTextToken;
 
-        return response()->json([
+        return $this->withAuthCookie(response()->json([
             'user'  => $user->load('school'),
-            'token' => $token,
-        ]);
+        ]), $token);
     }
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Logged out successfully.']);
+        return response()->json(['message' => 'Logged out successfully.'])
+            ->withoutCookie(config('auth_cookie.name'), '/', config('auth_cookie.domain'));
+    }
+
+    public function changePassword(Request $request)
+    {
+        $data = $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:12|confirmed|different:current_password',
+        ]);
+
+        $user = $request->user();
+        if (! Hash::check($data['current_password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['The current password is incorrect.'],
+            ]);
+        }
+
+        $user->forceFill(['password' => Hash::make($data['password'])])->save();
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Password changed. Sign in again.'])
+            ->withoutCookie(config('auth_cookie.name'), '/', config('auth_cookie.domain'));
     }
 
     public function me(Request $request)
     {
         return response()->json($request->user()->load('school'));
+    }
+
+    private function withAuthCookie($response, string $token)
+    {
+        return $response->cookie(
+            config('auth_cookie.name'),
+            $token,
+            config('auth_cookie.lifetime_minutes'),
+            '/',
+            config('auth_cookie.domain'),
+            config('auth_cookie.secure'),
+            true,
+            false,
+            config('auth_cookie.same_site'),
+        );
     }
 }

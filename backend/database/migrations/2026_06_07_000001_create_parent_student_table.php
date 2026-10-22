@@ -39,7 +39,7 @@ return new class extends Migration
                  is_primary_contact, can_receive_sms, can_receive_email,
                  created_at, updated_at)
             SELECT s.school_id, s.parent_user_id, s.id, NULL,
-                   1, 1, 1, NOW(), NOW()
+                   1, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
             FROM students s
             WHERE s.parent_user_id IS NOT NULL
               AND s.deleted_at IS NULL

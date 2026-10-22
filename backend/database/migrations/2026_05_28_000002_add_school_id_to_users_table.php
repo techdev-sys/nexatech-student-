@@ -10,7 +10,14 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->foreignId('school_id')->nullable()->constrained()->nullOnDelete();
-            $table->enum('role', ['super_admin', 'admin', 'teacher'])->default('teacher');
+            $table->enum('role', [
+                'super_admin',
+                'admin',
+                'teacher',
+                'parent',
+                'platform_admin',
+                'accountant',
+            ])->default('teacher');
         });
     }
 

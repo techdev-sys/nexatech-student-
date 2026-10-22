@@ -21,6 +21,10 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        if (app()->environment('production')) {
+            throw new \RuntimeException('DatabaseSeeder contains development fixtures and cannot run in production. Use purpose-specific seeders.');
+        }
+
         // ── Platform admin (no school — bypasses all tenant scoping) ────────
         User::create([
             'school_id' => null,
@@ -247,5 +251,6 @@ class DatabaseSeeder extends Seeder
         $this->command->info('  teacher     → teacher@greenwood.ac.zw');
         $this->command->info('  parent      → parent@greenwood.ac.zw  (linked to GW001 Takudzwa Moyo)');
         $this->command->info('  platform    → platform@studentmonitor.app');
+        $this->call(DemoSchoolSeeder::class);
     }
 }

@@ -9,11 +9,14 @@ Thumbs.db
 # Local agent/tool state
 .claude/
 .codex/
+.tools/
+.tmp/
 
 # Environment and secrets
 .env
 .env.*
 !.env.example
+!backend/.env.production.example
 
 # Dependencies
 node_modules/

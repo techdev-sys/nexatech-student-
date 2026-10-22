@@ -41,7 +41,7 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--hard-border-gray); }
 ::-webkit-scrollbar-thumb:hover { background: var(--institutional-navy); }
 
-h1, h2, h3, h4 { letter-spacing: 0; color: var(--on-surface); }
+h1, h2, h3, h4 { letter-spacing: 0; }
 
 button, input, select, textarea {
   border-radius: 0 !important;

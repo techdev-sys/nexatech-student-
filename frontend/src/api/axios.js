@@ -6,6 +6,7 @@ import { authRef }  from '../lib/authRef'
 
 const api = axios.create({
   baseURL: '/',
+  withCredentials: true,
   timeout: 20_000,
   headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
 })
@@ -35,10 +36,6 @@ function mutationKey(config) {
 // ── Request interceptor ───────────────────────────────────────────────────────
 
 api.interceptors.request.use((config) => {
-  // Attach auth token
-  const token = localStorage.getItem('auth_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-
   // Dedup guard for mutating verbs (POST / PATCH / PUT / DELETE)
   const method = config.method?.toUpperCase()
   if (method && method !== 'GET' && method !== 'HEAD') {
@@ -103,7 +100,7 @@ api.interceptors.response.use(
       // Retry GET before declaring offline
       const method = err.config?.method?.toUpperCase()
       if (method === 'GET' || method === 'HEAD') {
-        try { return await retryGet(err) } catch {}
+        try { return await retryGet(err) } catch { /* fall through to the offline notification */ }
       }
       notify('Network unavailable. Check the connection and retry.')
       return Promise.reject(err)
@@ -116,7 +113,7 @@ api.interceptors.response.use(
         // Skip loop: if the failing request was already the login or bootstrap call,
         // just clear state without toasting.
         const url = err.config?.url ?? ''
-        const isAuthCall = url.includes('/api/login') || url.includes('/api/me')
+        const isAuthCall = url.includes('/api/login') || url.includes('/api/demo/redeem') || url.includes('/api/logout') || url.includes('/api/me')
         if (!isAuthCall) {
           notify('Session expired. Sign in again.', 'warning')
           authRef.logout?.()
@@ -138,7 +135,7 @@ api.interceptors.response.use(
       default:
         if (status >= 500) {
           // Retry GET on server errors before showing toast
-          try { return await retryGet(err) } catch {}
+          try { return await retryGet(err) } catch { /* fall through to the server-error notification */ }
           notify('The server could not complete this request. Try again.')
         }
     }

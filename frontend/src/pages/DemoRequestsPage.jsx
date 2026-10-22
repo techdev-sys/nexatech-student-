@@ -30,6 +30,8 @@ export default function DemoRequestsPage() {
       .finally(() => setLoading(false))
   }
 
+  // Fetch when the platform administrator changes the status filter.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(load, [status])
 
   const review = async (request, action) => {
@@ -51,7 +53,7 @@ export default function DemoRequestsPage() {
       <div className="bg-white border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-bold text-slate-800 uppercase">Demo Requests</h2>
-          <p className="text-xs text-slate-500 mt-1">Approve qualified visitors and issue the demo access code.</p>
+          <p className="text-xs text-slate-500 mt-1">Approve qualified visitors and email a single-use, expiring demo code.</p>
         </div>
         <select value={status} onChange={e => setStatus(e.target.value)} className="border border-slate-200 px-3 py-2 text-sm bg-white">
           <option value="">All statuses</option>
@@ -65,7 +67,7 @@ export default function DemoRequestsPage() {
         <table>
           <thead>
             <tr>
-              {['Institution', 'Contact', 'Role', 'Country', 'Status', 'Access Code', 'Submitted', ''].map(h => (
+              {['Institution', 'Contact', 'Role', 'Country', 'Status', 'Access', 'Submitted', ''].map(h => (
                 <th key={h} className="text-left">{h}</th>
               ))}
             </tr>
@@ -88,7 +90,13 @@ export default function DemoRequestsPage() {
                 <td>{req.role || 'Not supplied'}</td>
                 <td>{req.country || 'Not supplied'}</td>
                 <td><StatusBadge status={req.status} /></td>
-                <td className="font-mono text-xs">{req.access_code || 'Pending approval'}</td>
+                <td className="text-xs">
+                  {req.redeemed_at
+                    ? 'Redeemed'
+                    : req.access_code_expires_at
+                      ? `Expires ${req.access_code_expires_at}`
+                      : 'Not issued'}
+                </td>
                 <td className="whitespace-nowrap">{req.created_at}</td>
                 <td>
                   {req.status === 'pending' ? (

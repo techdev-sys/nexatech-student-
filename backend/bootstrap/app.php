@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\AuthenticateWithTokenCookie;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,8 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Security headers on every response
         $middleware->append(SecurityHeaders::class);
 
+        // Convert the auth cookie before route-level auth:sanctum is evaluated.
+        $middleware->api(prepend: [AuthenticateWithTokenCookie::class]);
+
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckUserRole::class,
+            'demo.readonly' => \App\Http\Middleware\EnsureDemoReadOnly::class,
         ]);
 
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : route('login'));

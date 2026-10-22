@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Mail\PaymentReceiptMail;
 use App\Models\Transaction;
 use App\Services\SmsService;
 use Illuminate\Bus\Queueable;
@@ -10,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SendPaymentConfirmation implements ShouldQueue
 {
@@ -42,13 +44,12 @@ class SendPaymentConfirmation implements ShouldQueue
         $message = $this->buildMessage($transaction, $invoice, $student);
 
         if (filter_var($contact, FILTER_VALIDATE_EMAIL)) {
-            // Email path — swap stub for a real Mailable when SMTP is configured
-            Log::info('SendPaymentConfirmation: email queued', [
+            Mail::to($contact)->send(new PaymentReceiptMail($transaction));
+            Log::info('SendPaymentConfirmation: email sent', [
                 'to'      => $contact,
                 'invoice' => $invoice->invoice_number,
                 'amount'  => $transaction->amount,
             ]);
-            // Mail::to($contact)->send(new PaymentReceiptMail($transaction));
             return;
         }
 

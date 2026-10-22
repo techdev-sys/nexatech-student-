@@ -371,6 +371,45 @@ class ExaminationTest extends TestCase
         $this->assertEquals(48.0, (float) $grade->weighted_score);
     }
 
+    public function test_bulk_marks_reject_score_above_assessment_maximum(): void
+    {
+        $school = $this->school();
+        $admin = $this->adminUser($school);
+        $student = $this->studentFor($school);
+        $subject = $this->subjectFor($school);
+        $assessment = $this->assessmentFor($school, $subject, ['max_marks' => 50]);
+
+        $this->actingAs($admin)->postJson('/api/grades/bulk', [
+            'assessment_id' => $assessment->id,
+            'grades' => [['student_id' => $student->id, 'score' => 51]],
+        ])->assertUnprocessable()
+          ->assertJsonValidationErrors('grades.0.score');
+
+        $this->assertDatabaseMissing('grades', [
+            'school_id' => $school->id,
+            'student_id' => $student->id,
+            'assessment_id' => $assessment->id,
+        ]);
+    }
+
+    public function test_bulk_marks_reject_duplicate_students_in_one_request(): void
+    {
+        $school = $this->school();
+        $admin = $this->adminUser($school);
+        $student = $this->studentFor($school);
+        $subject = $this->subjectFor($school);
+        $assessment = $this->assessmentFor($school, $subject);
+
+        $this->actingAs($admin)->postJson('/api/grades/bulk', [
+            'assessment_id' => $assessment->id,
+            'grades' => [
+                ['student_id' => $student->id, 'score' => 40],
+                ['student_id' => $student->id, 'score' => 45],
+            ],
+        ])->assertUnprocessable()
+          ->assertJsonValidationErrors('grades.1.student_id');
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════
     // 11. Grading boundary applied correctly
     // ═══════════════════════════════════════════════════════════════════════════

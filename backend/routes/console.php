@@ -14,3 +14,6 @@ Schedule::command('payments:reconcile')->everyThirtyMinutes();
 
 // Prune expired Sanctum tokens daily (keeps personal_access_tokens table lean)
 Schedule::command('sanctum:prune-expired --hours=720')->daily();
+
+// Enforce documented operational-data retention windows.
+Schedule::command('data:prune-retention')->dailyAt('02:30');

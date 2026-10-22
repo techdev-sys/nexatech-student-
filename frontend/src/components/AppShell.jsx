@@ -95,7 +95,7 @@ const ADMIN_NAV = [
   { key: 'exam-sessions',        label: 'Exam Sessions',      icon: 'exam-sessions' },
   { key: 'exam-timetable',       label: 'Exam Timetable',     icon: 'exam-timetable' },
   { key: 'results-dashboard',    label: 'Results Dashboard',  icon: 'results-dash' },
-  { key: 'marks-entry',          label: 'Marks Entry',        icon: 'marks-entry' },
+  { key: 'marks-entry',          label: 'Fast Marks',         icon: 'marks-entry' },
   { key: 'class-results',        label: 'Class Results',      icon: 'class-results' },
   { key: 'student-results',      label: 'Student Results',    icon: 'student-results' },
   { key: 'report-cards',         label: 'Report Cards',       icon: 'report-cards' },
@@ -120,7 +120,7 @@ const TEACHER_NAV = [
   { key: 'tt-teacher',           label: 'Teacher Timetable',  icon: 'tt-teacher' },
   { key: 'tt-availability',      label: 'My Availability',    icon: 'tt-avail' },
   { divider: 'Examinations' },
-  { key: 'marks-entry',          label: 'Marks Entry',        icon: 'marks-entry' },
+  { key: 'marks-entry',          label: 'Fast Marks',         icon: 'marks-entry' },
   { key: 'class-results',        label: 'Class Results',      icon: 'class-results' },
   { key: 'student-results',      label: 'Student Results',    icon: 'student-results' },
 ]
@@ -169,7 +169,11 @@ function getPageLabel(nav, page) {
 export default function AppShell({ page, onNavigate, statusBadge, children }) {
   const { user, logout } = useAuth()
   const [collapsed, setCollapsed] = useState(false)
-  const nav = getNav(user?.role)
+  const nav = user?.is_demo ? getNav(user?.role) : [
+    ...getNav(user?.role),
+    { divider: 'Account' },
+    { key: 'account', label: 'Change Password', icon: 'users' },
+  ]
 
   return (
     <div className="min-h-screen bg-[#faf9fe] text-[#1a1b1f]">
@@ -187,7 +191,7 @@ export default function AppShell({ page, onNavigate, statusBadge, children }) {
           <div className="h-8 w-8 bg-[#113264] text-white flex items-center justify-center font-bold text-xs shrink-0">NX</div>
           <div className="min-w-0">
             <p className="text-[14px] leading-5 font-bold text-[#1A1A1A] uppercase tracking-normal truncate">
-              {user?.school?.name ?? 'NEXATECH Student Monitor'}
+              {user?.school?.name ?? 'Nexatech School Operations Platform'}
             </p>
             <p className="text-[11px] leading-4 text-[#44474f] uppercase truncate">Management Portal</p>
           </div>

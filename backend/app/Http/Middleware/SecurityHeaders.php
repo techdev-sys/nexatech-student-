@@ -18,6 +18,13 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy',           'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy',        'camera=(), microphone=(), geolocation=()');
 
+        if ($request->is('api/*')) {
+            $response->headers->set(
+                'Content-Security-Policy',
+                "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+            );
+        }
+
         // HSTS — only meaningful over HTTPS; safe to set always (browsers ignore on HTTP)
         $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 

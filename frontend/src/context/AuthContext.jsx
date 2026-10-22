@@ -6,11 +6,11 @@ const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => localStorage.getItem('auth_session') === '1')
 
   const logout = async () => {
     await api.post('/api/logout').catch(() => {})
-    localStorage.removeItem('auth_token')
+    localStorage.removeItem('auth_session')
     setUser(null)
   }
 
@@ -18,32 +18,43 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     authRef.logout = logout
     return () => { authRef.logout = null }
-  }, [])                                   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token')
-    if (token) {
+    const hasSession = localStorage.getItem('auth_session') === '1'
+    if (hasSession) {
       api.get('/api/me')
         .then((r) => setUser(r.data))
-        .catch(() => localStorage.removeItem('auth_token'))
+        .catch(() => localStorage.removeItem('auth_session'))
         .finally(() => setLoading(false))
-    } else {
-      setLoading(false)
     }
   }, [])
 
   const login = async (email, password) => {
     const { data } = await api.post('/api/login', { email, password })
-    localStorage.setItem('auth_token', data.token)
+    localStorage.setItem('auth_session', '1')
+    setUser(data.user)
+    return data
+  }
+
+  const redeemDemo = async (email, accessCode, role) => {
+    const { data } = await api.post('/api/demo/redeem', {
+      email,
+      access_code: accessCode,
+      role,
+    })
+    localStorage.setItem('auth_session', '1')
     setUser(data.user)
     return data
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, redeemDemo, logout }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
+// Context hooks intentionally live beside their provider.
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext)

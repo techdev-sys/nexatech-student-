@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class School extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'email', 'phone', 'address', 'logo', 'is_active'];
+    protected $fillable = ['name', 'email', 'phone', 'address', 'logo', 'is_active', 'is_demo'];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_demo' => 'boolean',
+    ];
 
     public function users()
     {

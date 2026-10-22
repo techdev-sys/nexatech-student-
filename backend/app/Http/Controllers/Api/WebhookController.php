@@ -16,7 +16,10 @@ class WebhookController extends Controller
         $raw = $request->getContent();
         $payload = $request->all();
 
-        Log::info("Webhook [{$gateway}] received", ['payload' => $payload]);
+        Log::info("Webhook [{$gateway}] received", [
+            'reference' => $payload['reference'] ?? $payload['m_payment_id'] ?? $payload['id'] ?? null,
+            'status' => $payload['status'] ?? $payload['payment_status'] ?? null,
+        ]);
 
         if (!$this->verifySignature($gateway, $request, $raw)) {
             Log::warning("Webhook [{$gateway}] signature verification failed");
@@ -105,6 +108,9 @@ class WebhookController extends Controller
     {
         // Paynow sends a hash field in the POST body; recompute and compare.
         $secret   = config('services.paynow.integration_key');
+        if (!$secret) {
+            return false;
+        }
         $received = strtoupper($request->input('hash', ''));
         $values   = collect($request->except('hash'))->sortKeys();
         $string   = $values->values()->implode('') . $secret;
@@ -117,6 +123,9 @@ class WebhookController extends Controller
     {
         // Stitch sends a HMAC-SHA256 signature in the X-Stitch-Signature header.
         $secret    = config('services.stitch.webhook_secret');
+        if (!$secret) {
+            return false;
+        }
         $signature = $request->header('X-Stitch-Signature', '');
         $expected  = 'sha256=' . hash_hmac('sha256', $raw, $secret);
 
@@ -131,6 +140,9 @@ class WebhookController extends Controller
             return false;
         }
         $secret    = config('services.payfast.passphrase');
+        if (!$secret) {
+            return false;
+        }
         $params    = collect($request->except('signature'))->sortKeys();
         $string    = $params->map(fn($v, $k) => "{$k}=" . urlencode(trim($v)))->implode('&');
         if ($secret) {
