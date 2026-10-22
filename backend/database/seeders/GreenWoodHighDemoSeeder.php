@@ -30,11 +30,6 @@ class GreenWoodHighDemoSeeder extends Seeder
 
     public function run(): void
     {
-        if (School::where('email', 'admin@greenwoodhigh.demo')->exists()) {
-            $this->command?->info('GreenWood High demo is already seeded.');
-            return;
-        }
-
         $school = School::updateOrCreate(['email' => 'admin@greenwoodhigh.demo'], [
             'name' => 'GreenWood High School', 'phone' => '+263 77 555 0140',
             'address' => '18 Borrowdale Road, Harare', 'is_active' => true, 'is_demo' => true,
@@ -143,7 +138,7 @@ class GreenWoodHighDemoSeeder extends Seeder
         }
 
         $incidentTypes = [];
-        foreach ([['Excellent contribution', 5, 'positive'], ['Late to class', -2, 'attendance'], ['Uniform concern', -1, 'conduct']] as [$name,$points,$category]) $incidentTypes[$name] = BehaviourIncidentType::updateOrCreate(['school_id' => $school->id, 'name' => $name], ['default_points' => $points, 'severity' => $points > 0 ? 'positive' : 'minor', 'category' => $category, 'notify_parent' => $points < 0, 'is_active' => true]);
+        foreach ([['Excellent contribution', 5, 'positive'], ['Late to class', -2, 'attendance'], ['Uniform concern', -1, 'conduct']] as [$name,$points,$category]) $incidentTypes[$name] = BehaviourIncidentType::updateOrCreate(['school_id' => $school->id, 'name' => $name], ['default_points' => $points, 'severity' => 'low', 'category' => $category, 'notify_parent' => $points < 0, 'is_active' => true]);
         $allStudents = array_merge(...array_values($studentsBySection));
         foreach (array_slice($allStudents, 0, 18) as $i => $student) {
             $typeName = $i % 3 === 0 ? 'Excellent contribution' : ($i % 3 === 1 ? 'Late to class' : 'Uniform concern'); $type = $incidentTypes[$typeName];
