@@ -130,6 +130,45 @@ export default function MarksEntryPage({ onSaveStatus }) {
     toast(`Pasted ${Math.min(values.length, studentsToShow.length - startIndex)} marks.`, 'success')
   }
 
+  const downloadCsv = () => {
+    const csv = ['student_id,mark', ...studentsToShow.map(s => `${s.student_id},`)].join('\r\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'marks-template.csv'
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const uploadCsv = async event => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    try {
+      if (file.size > 1048576) throw new Error('CSV must be smaller than 1 MB.')
+      const rows = (await file.text()).replace(/^\uFEFF/, '').trim().split(/\r?\n/).filter(r => r.trim()).map(r => r.split(',').map(v => v.trim().replace(/^"(.*)"$/, '$1')))
+      const header = rows.shift() || []
+      if (header.join(',').toLowerCase() !== 'student_id,mark') throw new Error('Use the CSV template with student_id,mark columns.')
+      const imported = {}
+      const seen = new Set()
+      for (const [i, row] of rows.entries()) {
+        const [id, value] = row
+        if (row.length !== 2 || !studentsToShow.some(s => String(s.student_id) === id) || seen.has(id)) throw new Error(`Row ${i + 2}: invalid or duplicate student ID.`)
+        seen.add(id)
+        if (!value) continue
+        if (!/^\d+(\.\d+)?$/.test(value) || !Number.isFinite(Number(value)) || Number(value) > maxMarks) throw new Error(`Row ${i + 2}: mark must be between 0 and ${maxMarks}.`)
+        imported[id] = value
+      }
+      if (!Object.keys(imported).length) throw new Error('No marks found in the CSV.')
+      if (saveTimer.current) clearTimeout(saveTimer.current)
+      const next = { ...marks, ...imported }
+      window.localStorage.setItem(draftKey(), JSON.stringify(next))
+      setMarks(next)
+      setSaveState('unsaved')
+      toast('CSV imported. Review the marks and click Save All.', 'success')
+    } catch (error) { toast(error.message, 'error') }
+  }
+
   const moveToRow = (index, event) => {
     if (!['Enter', 'ArrowDown', 'ArrowUp'].includes(event.key)) return
     event.preventDefault()
@@ -282,7 +321,11 @@ export default function MarksEntryPage({ onSaveStatus }) {
               {matrix?.class_name} · {matrix?.subject_name}
               {selectedAssessment && ` · ${selectedAssessment.name} (out of ${maxMarks})`}
             </span>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <button onClick={downloadCsv} disabled={!params.assessment_id || saving} className="border px-3 py-1.5 disabled:opacity-50">CSV template</button>
+              <label className="border px-3 py-1.5 cursor-pointer">Upload CSV
+                <input type="file" accept=".csv,text/csv" aria-label="Upload marks CSV" disabled={!params.assessment_id || saving} onChange={uploadCsv} className="block text-xs max-w-48" />
+              </label>
               {saving && <span className="text-xs text-slate-400 animate-pulse">Saving...</span>}
               {params.assessment_id && (
                 <button onClick={() => bulkSave()} disabled={saving}
@@ -298,7 +341,7 @@ export default function MarksEntryPage({ onSaveStatus }) {
             </div>
           )}
           <div className="px-5 py-2 border-b border-slate-200 bg-white text-xs text-slate-500">
-            Tip: copy one column of marks from a spreadsheet and paste it into the first matching mark cell. Use Enter or arrow keys to move down the class.
+            CSV: fill in the template, upload, review, then Save All. Blank marks are skipped. Tip: copy one column of marks from a spreadsheet and paste it into the first matching mark cell. Use Enter or arrow keys to move down the class.
           </div>
           <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">

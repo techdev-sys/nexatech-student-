@@ -169,6 +169,7 @@ function getPageLabel(nav, page) {
 export default function AppShell({ page, onNavigate, statusBadge, children }) {
   const { user, logout } = useAuth()
   const [collapsed, setCollapsed] = useState(false)
+  const [openSections, setOpenSections] = useState({})
   const nav = user?.is_demo ? getNav(user?.role) : [
     ...getNav(user?.role),
     { divider: 'Account' },
@@ -177,21 +178,25 @@ export default function AppShell({ page, onNavigate, statusBadge, children }) {
 
   return (
     <div className="h-dvh overflow-hidden bg-[#faf9fe] text-[#1a1b1f] flex flex-col">
-      <header className="h-12 shrink-0 bg-white border-b border-[#D2D2D2] flex items-center justify-between px-4 z-40">
+      <header className="h-16 shrink-0 bg-white border-b border-[#D2D2D2] flex items-center justify-between px-4 z-40">
         <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => setCollapsed(v => !v)}
             className="h-8 w-8 border border-[#D2D2D2] bg-[#F3F3F3] text-[#113264] flex items-center justify-center"
+            aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
+            aria-expanded={!collapsed}
             title={collapsed ? 'Expand navigation' : 'Collapse navigation'}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="square" strokeLinejoin="miter" d={collapsed ? 'M8 5l7 7-7 7' : 'M16 5l-7 7 7 7'} />
             </svg>
           </button>
-          <div className="h-8 w-8 bg-[#113264] text-white flex items-center justify-center font-bold text-xs shrink-0">NX</div>
+          <div className="scholaris-brand" >
+            <img src="/images/scholaris-logo.jpg" alt="Scholaris" />
+          </div>
           <div className="min-w-0">
             <p className="text-[14px] leading-5 font-bold text-[#1A1A1A] uppercase tracking-normal truncate">
-              {user?.school?.name ?? 'Nexatech School Operations Platform'}
+              {user?.school?.name ?? 'Scholaris School Operations Platform'}
             </p>
             <p className="text-[11px] leading-4 text-[#44474f] uppercase truncate">Management Portal</p>
           </div>
@@ -224,7 +229,7 @@ export default function AppShell({ page, onNavigate, statusBadge, children }) {
           <div className="px-4 py-3 border-b border-white/10 min-h-[54px]">
             {!collapsed ? (
               <>
-                <p className="text-[16px] leading-[22px] font-semibold text-white">Institution ERP</p>
+                <p className="text-[16px] leading-[22px] font-semibold text-white">School workspace</p>
                 <p className="text-[10px] leading-4 text-[#acc7ff] uppercase tracking-widest font-bold">{user?.name}</p>
               </>
             ) : (
@@ -232,16 +237,27 @@ export default function AppShell({ page, onNavigate, statusBadge, children }) {
             )}
           </div>
 
-          <nav className="flex-1 min-h-0 py-3 overflow-y-auto overscroll-contain">
+          <nav aria-label="Main navigation" className="school-navigation flex-1 min-h-0 py-3 overflow-y-auto overscroll-contain">
             {nav.map((item, i) => {
+              const section = item.divider || nav.slice(0, i).findLast(entry => entry.divider)?.divider
+              const sectionItems = section ? nav.slice(nav.findIndex(entry => entry.divider === section) + 1) : []
+              const nextDivider = sectionItems.findIndex(entry => entry.divider)
+              const containsActive = (nextDivider < 0 ? sectionItems : sectionItems.slice(0, nextDivider)).some(entry => entry.key === page)
+              const expanded = openSections[section] ?? containsActive
               if (item.divider) {
                 return collapsed
-                  ? <div key={i} className="border-t border-white/10 my-2" />
-                  : <p key={i} className="text-[10px] font-bold text-[#acc7ff] uppercase tracking-widest px-4 pt-4 pb-1">{item.divider}</p>
+                  ? <div key={item.divider} className="border-t border-white/10 my-2" />
+                  : <button key={item.divider} type="button" aria-expanded={expanded}
+                      onClick={() => setOpenSections(current => ({ ...current, [section]: !expanded }))}
+                      className="nav-section">
+                      <span>{item.divider}</span>
+                      <Icon d={expanded ? 'M6 9l6 6 6-6' : 'M9 6l6 6-6 6'} />
+                    </button>
               }
+              if (!collapsed && section && !expanded) return null
               const active = page === item.key
               return (
-                <button key={item.key} onClick={() => onNavigate(item.key)} title={collapsed ? item.label : undefined}
+                <button key={item.key} onClick={() => onNavigate(item.key)} title={collapsed ? item.label : undefined} aria-current={page === item.key ? 'page' : undefined}
                   className={`w-full flex items-center gap-3 px-4 py-2 text-[13px] leading-[18px] text-left transition border-l-4 ${active ? 'bg-[#005A9C] border-[#7ab7ff] text-white font-bold' : 'border-transparent text-white/75 hover:bg-white/10 hover:text-white'}`}>
                   <Icon d={icons[item.icon] ?? icons.dashboard} />
                   {!collapsed && <span className="truncate">{item.label}</span>}
@@ -252,7 +268,7 @@ export default function AppShell({ page, onNavigate, statusBadge, children }) {
 
           <div className="p-3 border-t border-white/10">
             <button onClick={logout}
-              className="w-full flex items-center gap-3 px-3 py-2 text-[13px] leading-[18px] text-white/75 hover:bg-white/10 hover:text-white transition">
+              className="w-full flex items-center gap-3 px-3 py-2 text-[13px] leading-[18px] text-white/75 hover:bg-white/10 hover:text-white transition" aria-label="Sign out">
               <Icon d={icons.logout} />
               {!collapsed && <span>Sign out</span>}
             </button>

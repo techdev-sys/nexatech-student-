@@ -144,3 +144,13 @@ tbody tr:hover { background: var(--surface-container-high) !important; }
 .min-h-screen[class*="items-center"] {
   background: var(--surface) !important;
 }
+
+/* Keep the supplied wordmark readable by framing its surrounding whitespace. */
+.scholaris-brand { position: relative; width: 148px; height: 45px; overflow: hidden; flex-shrink: 0; }
+.scholaris-brand img { position: absolute; width: 195px; max-width: none; height: auto; left: -24px; top: -50px; }
+.school-navigation { scrollbar-width: thin; scrollbar-color: #456187 #113264; padding-inline: 8px; }
+.school-navigation .nav-section { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 13px 12px; margin-top: 5px; color: #cad9ef; background: transparent; border: 0; border-top: 1px solid #ffffff15; text-align: left; font-weight: 600; cursor: pointer; }
+.school-navigation .nav-section:hover { background: #ffffff0d; color: white; }
+.school-navigation button:focus-visible { outline: 2px solid #61d6d0; outline-offset: -2px; }
+@media (max-width: 640px) { .scholaris-brand { width: 112px; } header .scholaris-brand + div { display: none; } }
+@media (max-width: 640px) { .scholaris-brand img { width: 148px; left: -18px; top: -34px; } }
